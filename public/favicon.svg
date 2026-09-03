@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141C15" />
+      <stop offset="100%" stop-color="#2A3A2C" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCE29A" />
+      <stop offset="50%" stop-color="#E6AF2E" />
+      <stop offset="100%" stop-color="#B88310" />
+    </linearGradient>
+    <linearGradient id="terracottaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EA9A63" />
+      <stop offset="100%" stop-color="#C26526" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Circle / Base -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-opacity="0.4" />
+
+  <!-- Geometric Agricultural Ring & Latice -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#8C9B78" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.5" />
+  
+  <!-- Stylized Wheat Stalk & Architectural 'T' Monogram -->
+  <g transform="translate(256, 256)" filter="url(#glow)">
+    <!-- Central Stalk -->
+    <path d="M 0 160 L 0 -130" stroke="url(#goldGrad)" stroke-width="10" stroke-linecap="round" />
+    
+    <!-- Top Modern T-Bar Horizon -->
+    <path d="M -110 -120 L 110 -120" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" />
+    <path d="M -110 -120 Q 0 -145 110 -120" stroke="url(#terracottaGrad)" stroke-width="4" fill="none" />
+
+    <!-- Left Wheat Grains -->
+    <path d="M 0 -70 Q -55 -85 -50 -115 Q -15 -95 0 -70" fill="url(#goldGrad)" />
+    <path d="M 0 -20 Q -65 -35 -60 -70 Q -20 -48 0 -20" fill="url(#goldGrad)" />
+    <path d="M 0 30 Q -60 15 -55 -20 Q -15 3 0 30" fill="url(#goldGrad)" />
+    <path d="M 0 80 Q -50 65 -45 30 Q -15 53 0 80" fill="url(#goldGrad)" />
+
+    <!-- Right Wheat Grains -->
+    <path d="M 0 -70 Q 55 -85 50 -115 Q 15 -95 0 -70" fill="url(#goldGrad)" />
+    <path d="M 0 -20 Q 65 -35 60 -70 Q 20 -48 0 -20" fill="url(#goldGrad)" />
+    <path d="M 0 30 Q 60 15 55 -20 Q 15 3 0 30" fill="url(#goldGrad)" />
+    <path d="M 0 80 Q 50 65 45 30 Q 15 53 0 80" fill="url(#goldGrad)" />
+
+    <!-- Terracotta Earth Seed / Drop Accent at bottom -->
+    <circle cx="0" cy="120" r="12" fill="url(#terracottaGrad)" />
+  </g>
+
+  <!-- Industrial Precision Subtitle Ring -->
+  <text x="256" y="445" font-family="'Cinzel', 'Playfair Display', serif" font-size="28" font-weight="bold" fill="#FCE29A" text-anchor="middle" letter-spacing="12">TERRANOVA</text>
+  <text x="256" y="472" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="600" fill="#8C9B78" text-anchor="middle" letter-spacing="6">AGRO-INDUSTRIE</text>
+</svg>

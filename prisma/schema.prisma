@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  address      String?
+  city         String?
+  role         String    @default("CLIENT") // "ADMIN" or "CLIENT"
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String
+  image       String
+  order       Int       @default(0)
+  active      Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String
+  shortDesc   String?
+  price       Float
+  unit        String      @default("kg") // "kg", "sac 50kg", "tête", "litre", "tonne", "bouteille"
+  stock       Int         @default(0)
+  sku         String?
+  status      String      @default("ACTIVE") // "ACTIVE", "OUT_OF_STOCK", "ARCHIVED"
+  featured    Boolean     @default(false)
+  images      String      // JSON array of image URLs
+  specs       String?     // JSON object for technical specifications (humidité, pureté, race, calibrage, etc.)
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Section {
+  id                String   @id @default(cuid())
+  type              String   // "HERO", "CATEGORIES_HIGHLIGHT", "STORY_VALUES", "KEY_METRICS", "QUALITY_TRACEABILITY", "TESTIMONIALS", "GALLERY", "CTA_BANNER", "CONTACT_INFO"
+  title             String
+  subtitle          String?
+  content           String?
+  badge             String?
+  mediaUrl          String?
+  secondaryMediaUrl String?
+  metadata          String?  // JSON string for complex structured data (metrics list, testimonials, cards)
+  order             Int      @default(0)
+  visible           Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress String
+  shippingCity    String
+  customerNotes   String?
+  subtotal        Float
+  taxAmount       Float       @default(0)
+  shippingFee     Float       @default(0)
+  totalAmount     Float
+  status          String      @default("PENDING") // "PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"
+  paymentMethod   String      @default("FAPSHI_MOMO") // "FAPSHI_MOMO", "FAPSHI_OM", "WHATSAPP", "CASH"
+  paymentStatus   String      @default("PENDING") // "PENDING", "SUCCESS", "FAILED"
+  paymentRef      String?
+  invoiceNumber   String?
+  invoiceUrl      String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  unitPrice   Float
+  quantity    Int
+  unit        String
+  totalRow    Float
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
