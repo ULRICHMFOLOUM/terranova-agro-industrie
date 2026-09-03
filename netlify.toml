@@ -5,6 +5,7 @@
 [build.environment]
   NODE_VERSION = "20"
   PRISMA_GENERATE_DATAPROXY = "false"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
