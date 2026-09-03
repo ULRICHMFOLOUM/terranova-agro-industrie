@@ -1,10 +1,9 @@
 [build]
-  command = "prisma generate && next build"
+  command = "unset PRISMA_GENERATE_DATAPROXY && prisma generate && next build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
-  PRISMA_GENERATE_DATAPROXY = "false"
   NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
