@@ -10,35 +10,48 @@ import { FeaturedProductsSection } from "@/components/sections/FeaturedProductsS
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const user = await getSession();
+  let user = null;
+  let categories: any[] = [];
+  let sections: any[] = [];
+  let featuredProducts: any[] = [];
 
-  // Fetch all active categories ordered by sort order
-  const categories = await prisma.category.findMany({
-    where: { active: true },
-    include: {
-      _count: { select: { products: true } },
-    },
-    orderBy: { order: "asc" },
-  });
+  try {
+    user = await getSession();
+  } catch (e) {
+    console.error("[HomePage] getSession error:", e);
+  }
 
-  // Fetch all visible CMS sections ordered by sort order
-  const sections = await prisma.section.findMany({
-    where: { visible: true },
-    orderBy: { order: "asc" },
-  });
+  try {
+    // Fetch all active categories ordered by sort order
+    categories = await prisma.category.findMany({
+      where: { active: true },
+      include: {
+        _count: { select: { products: true } },
+      },
+      orderBy: { order: "asc" },
+    });
 
-  // Fetch featured products
-  const featuredProducts = await prisma.product.findMany({
-    where: {
-      status: { not: "ARCHIVED" },
-      featured: true,
-    },
-    include: {
-      category: true,
-    },
-    take: 8,
-    orderBy: { createdAt: "desc" },
-  });
+    // Fetch all visible CMS sections ordered by sort order
+    sections = await prisma.section.findMany({
+      where: { visible: true },
+      orderBy: { order: "asc" },
+    });
+
+    // Fetch featured products
+    featuredProducts = await prisma.product.findMany({
+      where: {
+        status: { not: "ARCHIVED" },
+        featured: true,
+      },
+      include: {
+        category: true,
+      },
+      take: 8,
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    console.error("[HomePage] Prisma DB error:", e);
+  }
 
   return (
     <div className="min-h-screen bg-sand-50 text-clay-900 flex flex-col selection:bg-terracotta-500 selection:text-white">
