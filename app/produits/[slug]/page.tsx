@@ -27,52 +27,64 @@ interface ProductPageProps {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
-
-  if (!product) return { title: "Produit non trouvé" };
-
-  return {
-    title: `${product.name} | TERRANOVA AGRO-INDUSTRIE`,
-    description: product.shortDesc || product.description.slice(0, 160),
-  };
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      include: { category: true },
+    });
+    if (!product) return { title: "Produit non trouvé" };
+    return {
+      title: `${product.name} | TERRANOVA AGRO-INDUSTRIE`,
+      description: product.shortDesc || product.description.slice(0, 160),
+    };
+  } catch {
+    return { title: "TERRANOVA AGRO-INDUSTRIE" };
+  }
 }
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const user = await getSession();
+  let user = null;
+  let categories: any[] = [];
+  let relatedProducts: any[] = [];
+  let product: any = null;
 
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-    },
-  });
-
-  if (!product) {
-    notFound();
+  try {
+    user = await getSession();
+  } catch (e) {
+    console.error("[ProductDetailPage] getSession error:", e);
   }
 
-  // Fetch categories for navbar
-  const categories = await prisma.category.findMany({
-    where: { active: true },
-    orderBy: { order: "asc" },
-  });
+  try {
+    product = await prisma.product.findUnique({
+      where: { slug },
+      include: { category: true },
+    });
 
-  // Fetch related products in the same category
-  const relatedProducts = await prisma.product.findMany({
-    where: {
-      categoryId: product.categoryId,
-      id: { not: product.id },
-      status: { not: "ARCHIVED" },
-    },
-    take: 4,
-    include: {
-      category: true,
-    },
-  });
+    if (!product) {
+      notFound();
+    }
+
+    // Fetch categories for navbar
+    categories = await prisma.category.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+    });
+
+    // Fetch related products in the same category
+    relatedProducts = await prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        id: { not: product.id },
+        status: { not: "ARCHIVED" },
+      },
+      take: 4,
+      include: { category: true },
+    });
+  } catch (e: any) {
+    console.error("[ProductDetailPage] Prisma DB error:", e);
+    if (!product) notFound();
+  }
 
   let parsedImages: string[] = [];
   try {

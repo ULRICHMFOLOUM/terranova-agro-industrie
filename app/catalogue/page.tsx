@@ -31,56 +31,68 @@ export default async function CataloguePage({ searchParams }: CataloguePageProps
   const sortOption = params.sort || "featured";
   const inStockOnly = params.stock === "1";
 
-  const user = await getSession();
+  let user = null;
+  let categories: any[] = [];
+  let products: any[] = [];
 
-  // Fetch all active categories
-  const categories = await prisma.category.findMany({
-    where: { active: true },
-    orderBy: { order: "asc" },
-  });
+  try {
+    user = await getSession();
+  } catch (e) {
+    console.error("[CataloguePage] getSession error:", e);
+  }
 
-  // Build where filter for products
-  const whereFilter: any = {
-    status: { not: "ARCHIVED" },
-  };
+  try {
+    // Fetch all active categories
+    categories = await prisma.category.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+    });
 
-  if (selectedCategorySlug) {
-    const matchedCategory = categories.find((c) => c.slug === selectedCategorySlug);
-    if (matchedCategory) {
-      whereFilter.categoryId = matchedCategory.id;
+    // Build where filter for products
+    const whereFilter: any = {
+      status: { not: "ARCHIVED" },
+    };
+
+    if (selectedCategorySlug) {
+      const matchedCategory = categories.find((c) => c.slug === selectedCategorySlug);
+      if (matchedCategory) {
+        whereFilter.categoryId = matchedCategory.id;
+      }
     }
-  }
 
-  if (searchQuery) {
-    whereFilter.OR = [
-      { name: { contains: searchQuery } },
-      { description: { contains: searchQuery } },
-      { shortDesc: { contains: searchQuery } },
-    ];
-  }
+    if (searchQuery) {
+      whereFilter.OR = [
+        { name: { contains: searchQuery } },
+        { description: { contains: searchQuery } },
+        { shortDesc: { contains: searchQuery } },
+      ];
+    }
 
-  if (inStockOnly) {
-    whereFilter.stock = { gt: 0 };
-    whereFilter.status = "ACTIVE";
-  }
+    if (inStockOnly) {
+      whereFilter.stock = { gt: 0 };
+      whereFilter.status = "ACTIVE";
+    }
 
-  // Determine sorting order
-  let orderByClause: any = [{ featured: "desc" }, { createdAt: "desc" }];
-  if (sortOption === "price-asc") {
-    orderByClause = { price: "asc" };
-  } else if (sortOption === "price-desc") {
-    orderByClause = { price: "desc" };
-  } else if (sortOption === "newest") {
-    orderByClause = { createdAt: "desc" };
-  }
+    // Determine sorting order
+    let orderByClause: any = [{ featured: "desc" }, { createdAt: "desc" }];
+    if (sortOption === "price-asc") {
+      orderByClause = { price: "asc" };
+    } else if (sortOption === "price-desc") {
+      orderByClause = { price: "desc" };
+    } else if (sortOption === "newest") {
+      orderByClause = { createdAt: "desc" };
+    }
 
-  const products = await prisma.product.findMany({
-    where: whereFilter,
-    include: {
-      category: true,
-    },
-    orderBy: orderByClause,
-  });
+    products = await prisma.product.findMany({
+      where: whereFilter,
+      include: {
+        category: true,
+      },
+      orderBy: orderByClause,
+    });
+  } catch (e) {
+    console.error("[CataloguePage] Prisma DB error:", e);
+  }
 
   const currentCategory = categories.find((c) => c.slug === selectedCategorySlug);
 

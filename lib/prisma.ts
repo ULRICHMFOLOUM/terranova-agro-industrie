@@ -2,10 +2,19 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
+if (!process.env.DATABASE_URL) {
+  console.error("[Prisma] CRITICAL: DATABASE_URL environment variable is not set!");
+}
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+    log: process.env.NODE_ENV === "development" ? ["query", "warn", "error"] : ["warn", "error"],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
