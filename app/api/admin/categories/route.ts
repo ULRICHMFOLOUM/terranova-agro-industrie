@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
@@ -40,6 +41,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      revalidatePath("/admin/categories", "page");
+    } catch (e) {}
+
     return NextResponse.json({ success: true, category });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Erreur création catégorie" }, { status: 500 });
@@ -67,6 +74,12 @@ export async function PUT(req: NextRequest) {
         active: active !== undefined ? Boolean(active) : undefined,
       },
     });
+
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      revalidatePath("/admin/categories", "page");
+    } catch (e) {}
 
     return NextResponse.json({ success: true, category });
   } catch (error: any) {
@@ -99,6 +112,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     await prisma.category.delete({ where: { id } });
+
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      revalidatePath("/admin/categories", "page");
+    } catch (e) {}
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

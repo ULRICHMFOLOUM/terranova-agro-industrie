@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
@@ -64,6 +65,16 @@ export async function POST(req: NextRequest) {
       include: { category: true },
     });
 
+    // Invalider le cache Next.js pour afficher les modifications immédiatement
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      revalidatePath(`/produits/${slug}`, "page");
+      revalidatePath("/admin/produits", "page");
+    } catch (e) {
+      console.warn("[REVALIDATE ERROR]", e);
+    }
+
     return NextResponse.json({ success: true, product });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Erreur création produit" }, { status: 500 });
@@ -107,6 +118,18 @@ export async function PUT(req: NextRequest) {
       include: { category: true },
     });
 
+    // Invalider le cache Next.js pour afficher les modifications immédiatement
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      if (product.slug) {
+        revalidatePath(`/produits/${product.slug}`, "page");
+      }
+      revalidatePath("/admin/produits", "page");
+    } catch (e) {
+      console.warn("[REVALIDATE ERROR]", e);
+    }
+
     return NextResponse.json({ success: true, product });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Erreur modification produit" }, { status: 500 });
@@ -123,7 +146,20 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "ID manquant." }, { status: 400 });
     }
 
-    await prisma.product.delete({ where: { id } });
+    const deleted = await prisma.product.delete({ where: { id } });
+
+    // Invalider le cache Next.js
+    try {
+      revalidatePath("/", "page");
+      revalidatePath("/catalogue", "page");
+      if (deleted.slug) {
+        revalidatePath(`/produits/${deleted.slug}`, "page");
+      }
+      revalidatePath("/admin/produits", "page");
+    } catch (e) {
+      console.warn("[REVALIDATE ERROR]", e);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Erreur suppression produit" }, { status: 500 });

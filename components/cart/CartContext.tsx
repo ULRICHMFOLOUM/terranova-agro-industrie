@@ -48,7 +48,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
       if (saved) {
-        setItems(JSON.parse(saved));
+        const parsed: CartItem[] = JSON.parse(saved);
+        setItems(parsed);
+
+        // Mettre à jour immédiatement les prix si l'administrateur les a modifiés
+        if (parsed.length > 0) {
+          const ids = parsed.map((item) => item.id).join(",");
+          fetch(`/api/products/sync-cart?ids=${ids}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.products && Array.isArray(data.products)) {
+                setItems((prev) =>
+                  prev.map((item) => {
+                    const fresh = data.products.find((p: any) => p.id === item.id);
+                    if (fresh) {
+                      return {
+                        ...item,
+                        price: fresh.price,
+                        stock: fresh.stock,
+                        name: fresh.name,
+                      };
+                    }
+                    return item;
+                  })
+                );
+              }
+            })
+            .catch(() => {});
+        }
       }
     } catch (e) {
       console.warn("Could not load cart from localStorage", e);
